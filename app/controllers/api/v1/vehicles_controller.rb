@@ -116,9 +116,11 @@ module Api
       end
 
       def fetch_vehicles_payload
+        # POST queryUserVehicle is tried first. If it returns permission denied (result=5),
+        # the GET variant of the same endpoint will also fail (and may timeout), so skip
+        # straight to the legacy endpoint which is known to work for this account.
         attempts = [
           -> { cms_client.post("StandardApiAction_queryUserVehicle.action", body: { language: "en" }) },
-          -> { cms_client.get("StandardApiAction_queryUserVehicle.action", params: { language: "en" }) },
           -> { cms_client.get("StandardLoginAction_getUserVehicleExForIndex.action", params: legacy_vehicle_params) }
         ]
 
