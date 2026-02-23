@@ -184,7 +184,13 @@ module Api
           row["deviceStatus"]
         )
 
-        # Some CMS variants don't expose an explicit online flag but do return valid live position fields.
+        # Only fall back to position presence if the CMS returned NO explicit online field at all.
+        # Using position as a proxy when an explicit field exists causes stale coordinates to
+        # report offline vehicles as online.
+        has_explicit_online_field = [
+          row["online"], row["onlineStatus"], row["ol"], row["isOnline"], row["status"], row["deviceStatus"]
+        ].any? { |v| !v.nil? }
+
         live_position_present = [ row["lat"], row["latitude"], row["weiDu"] ].any?(&:present?) &&
           [ row["lng"], row["longitude"], row["lon"], row["jingDu"] ].any?(&:present?)
 
@@ -193,7 +199,7 @@ module Api
           latitude: row["lat"] || row["latitude"] || row["weiDu"],
           longitude: row["lng"] || row["longitude"] || row["lon"] || row["jingDu"],
           speed_kmh: row["speed"] || row["gpsSpeed"] || row["velocity"],
-          online: online || live_position_present,
+          online: has_explicit_online_field ? online : live_position_present,
           updated_at: row["time"] || row["gpsTime"] || row["timestamp"]
         }
       end
@@ -270,7 +276,7 @@ module Api
           when Numeric then value.to_i.positive?
           when String
             normalized = value.strip.downcase
-            %w[1 2 online true yes y].include?(normalized)
+            %w[1 online true yes y].include?(normalized)
           else
             false
           end
