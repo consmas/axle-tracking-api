@@ -184,23 +184,15 @@ module Api
           row["deviceStatus"]
         )
 
-        # Only fall back to position presence if the CMS returned NO explicit online field at all.
-        # Using position as a proxy when an explicit field exists causes stale coordinates to
-        # report offline vehicles as online.
-        has_explicit_online_field = [
-          row["online"], row["onlineStatus"], row["ol"], row["isOnline"], row["status"], row["deviceStatus"]
-        ].any? { |v| !v.nil? }
-
-        live_position_present = [ row["lat"], row["latitude"], row["weiDu"] ].any?(&:present?) &&
-          [ row["lng"], row["longitude"], row["lon"], row["jingDu"] ].any?(&:present?)
-
+        # This CMS sends ol:1 only for online devices; offline devices omit ol entirely.
+        # Do not fall back to position presence — stale coordinates exist for offline vehicles.
         {
           vehicle_id: row["vehiIdno"] || row["vehiIDNO"] || row["vid"] || vehicle_id,
           latitude: row["lat"] || row["latitude"] || row["weiDu"],
           longitude: row["lng"] || row["longitude"] || row["lon"] || row["jingDu"],
           speed_kmh: row["speed"] || row["gpsSpeed"] || row["velocity"],
-          online: has_explicit_online_field ? online : live_position_present,
-          updated_at: row["time"] || row["gpsTime"] || row["timestamp"]
+          online: online,
+          updated_at: row["time"] || row["gpsTime"] || row["timestamp"] || row["gt"] || row["rt"]
         }
       end
 
