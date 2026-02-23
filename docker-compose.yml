@@ -13,7 +13,7 @@ services:
   web:
     build: .
     ports:
-      - "80:80"
+      - "3000:80"
     env_file: .env
     environment:
       REDIS_URL: redis://redis:6379/1
