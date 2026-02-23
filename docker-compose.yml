@@ -1,0 +1,29 @@
+services:
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  web:
+    build: .
+    ports:
+      - "80:80"
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/1
+    volumes:
+      - storage:/rails/storage
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  storage:
