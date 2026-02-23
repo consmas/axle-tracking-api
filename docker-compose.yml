@@ -12,8 +12,8 @@ services:
 
   web:
     build: .
-    ports:
-      - "3000:80"
+    expose:
+      - "80"
     env_file: .env
     environment:
       REDIS_URL: redis://redis:6379/1
@@ -24,6 +24,27 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - certbot_www:/var/www/certbot
+      - certbot_etc:/etc/letsencrypt
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_etc:/etc/letsencrypt
+
 volumes:
   redis_data:
   storage:
+  certbot_www:
+  certbot_etc:
