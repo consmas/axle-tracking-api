@@ -7,7 +7,7 @@ gem "sqlite3", ">= 2.1"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 gem "bcrypt", "~> 3.1"
-gem "jwt", "~> 2.9"
+gem "jwt", "~> 3.1"
 gem "faraday", "~> 2.12"
 gem "faraday-retry", "~> 2.2"
 gem "redis", "~> 5.3"
